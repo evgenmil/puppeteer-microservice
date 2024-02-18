@@ -12,7 +12,7 @@ puppeteer.use(StealthPlugin());
 // Middleware для создания или использования существующего экземпляра браузера
 app.use(async (req, res, next) => {
   if (!browser) {
-    browser = await puppeteer.launch({ headless: true });
+    browser = await puppeteer.launch({ headless: true, args: [ '--disable-gpu', '--disable-setuid-sandbox', '--no-sandbox', '--no-zygote' ], executablePath: '/usr/bin/chromium' });
   }
   req.browser = browser;
   next();
