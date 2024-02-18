@@ -1,6 +1,7 @@
 const express = require('express');
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const locateChrome = require('locate-chrome');
 
 const app = express();
 const port = 3000;
@@ -12,7 +13,11 @@ puppeteer.use(StealthPlugin());
 // Middleware для создания или использования существующего экземпляра браузера
 app.use(async (req, res, next) => {
   if (!browser) {
-    browser = await puppeteer.launch({ headless: true, args: [ '--disable-gpu', '--disable-setuid-sandbox', '--no-sandbox', '--no-zygote' ], executablePath: '/usr/bin/chromium' });
+      const executablePath = await new Promise(resolve => locateChrome((arg) => resolve(arg))) || '';
+      browser = await puppeteer.launch({
+        executablePath,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
   }
   req.browser = browser;
   next();
