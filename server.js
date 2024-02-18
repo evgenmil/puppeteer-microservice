@@ -10,19 +10,6 @@ let browser; // Сохраняем экземпляр браузера
 
 puppeteer.use(StealthPlugin());
 
-// Middleware для создания или использования существующего экземпляра браузера
-app.use(async (req, res, next) => {
-  if (!browser) {
-      const executablePath = await new Promise(resolve => locateChrome((arg) => resolve(arg))) || '';
-      browser = await puppeteer.launch({
-        executablePath,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
-  }
-  req.browser = browser;
-  next();
-});
-
 app.get('/get-content', async (req, res) => {
   const url = req.query.url;
 
@@ -31,6 +18,16 @@ app.get('/get-content', async (req, res) => {
   }
 
   try {
+    const executablePath = await new Promise(resolve => locateChrome((arg) => resolve(arg))) || '';
+    browser = await puppeteer.launch({
+      executablePath,
+      args: [
+          '--disable-gpu',
+        '--disable-dev-shm-usage',
+        '--disable-setuid-sandbox',
+        '--no-sandbox'
+      ],
+    });
     const page = await req.browser.newPage();
     await page.goto(url, { waitUntil: 'domcontentloaded' });
 
